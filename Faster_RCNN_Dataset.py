@@ -14,8 +14,8 @@ class Faster_RCNN_Dataset(torch.utils.data.Dataset):
     # PIL_Image
     PIL_Image = self.Data[index][0]
     Annotation = self.Data[index][1]['annotation']
-    Normalization = torchvision.transforms.Normalize((0.485, 0.456, 0.406),
-                                                     (0.229, 0.224, 0.225))
+    #Normalization = torchvision.transforms.Normalize((0.485, 0.456, 0.406),
+    #                                                 (0.229, 0.224, 0.225))
 
     # Original_size
     # Full_Image_Array
@@ -26,10 +26,10 @@ class Faster_RCNN_Dataset(torch.utils.data.Dataset):
                      int(Size_Tuple['width']))
     Image_Array = np.asarray(PIL_Image)
     Full_Image_Array = Image_Array.copy()
-    Full_Image_Tensor = torch.Tensor(Full_Image_Array).reshape(3,
-                                                               Original_Size[1],
-                                                               Original_Size[2])
-    Full_Image_Tensor = Normalization(Full_Image_Tensor)
+    Full_Image_Tensor = torch.Tensor(Full_Image_Array)#.reshape(3,
+                                                      #         Original_Size[1],
+                                                      #         Original_Size[2])
+    #Full_Image_Tensor = Normalization(Full_Image_Tensor)
     Full_Image_Tensor = Full_Image_Tensor.reshape(Original_Size[1],
                                                   Original_Size[2],
                                                   3)
@@ -69,7 +69,7 @@ class Faster_RCNN_Dataset(torch.utils.data.Dataset):
         Regions_of_Interests.append(roi)
   
     # Model_ids
-    Key_Number = 8
+    Key_Number = 6
     Model_Ids = RoI_Pooling(Feature_Map, Regions_of_Interests, (7, 7))
     
     T_ids = []
@@ -98,7 +98,7 @@ class Faster_RCNN_Dataset(torch.utils.data.Dataset):
           T_label.append(model_label)
           T_target.append((Make_targets(RoI, Resized_GT)).tolist())
           T_guide.append(1)
-          if len(T_ids) >= Key_Number * 7 / 8:
+          if len(T_ids) >= Key_Number * 5 / 6:
             break
           
         elif Compute_IoU(RoI, Resized_GT) >= 0.0 and Compute_IoU(RoI, Resized_GT) < 0.1:
