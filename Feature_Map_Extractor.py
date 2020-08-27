@@ -1,4 +1,3 @@
-# 0.Fast_RCNN_VGG16 : Feature Extraction
 device = 'cuda'
 import torch.nn as nn
 from collections import OrderedDict
@@ -36,10 +35,10 @@ class Faster_RCNN_VGG16(nn.Module):
                      ('Conv_8', nn.Conv2d(256, 512, 3, stride = 1, padding = 1)),
                      ('Batch_Norm_8', nn.BatchNorm2d(512)),
                      ('ReLU_8', nn.ReLU(inplace = True)),
-                     ('Conv_9', nn.Conv2d(512, 512, 3, stride = 1, padding = 1)),
-                     ('Batch_Norm_9', nn.BatchNorm2d(512)),
-                     ('ReLU_9', nn.ReLU(inplace = True)),
-                     ('Conv_10', nn.Conv2d(512, 512, 3, stride = 1, padding = 1))]))
+                     ('Conv_9', nn.Conv2d(512, 512, 3, stride = 1, padding = 1))]))
+                     #('Batch_Norm_9', nn.BatchNorm2d(512)),
+                     #('ReLU_9', nn.ReLU(inplace = True)),
+                     #('Conv_10', nn.Conv2d(512, 512, 3, stride = 1, padding = 1))]))
                      #('Batch_Norm_10', nn.BatchNorm2d(512)),
                      #('ReLU_10', nn.ReLU(inplace = True))]))
                      #('Maxpool_4', nn.MaxPool2d(2, stride = 2))]))
@@ -61,8 +60,8 @@ class Faster_RCNN_VGG16(nn.Module):
     nn.init.normal_(self.Convolution_Layer._modules['Conv_8'].bias, 0)
     nn.init.normal_(self.Convolution_Layer._modules['Conv_9'].weight, std=0.01)
     nn.init.normal_(self.Convolution_Layer._modules['Conv_9'].bias, 0)
-    nn.init.normal_(self.Convolution_Layer._modules['Conv_10'].weight, std=0.001)
-    nn.init.normal_(self.Convolution_Layer._modules['Conv_10'].bias, 0)
+    #nn.init.normal_(self.Convolution_Layer._modules['Conv_10'].weight, std=0.001)
+    #nn.init.normal_(self.Convolution_Layer._modules['Conv_10'].bias, 0)
   def forward(self, Image):
     Conv_Image = self.Convolution_Layer(Image)
     return Conv_Image
