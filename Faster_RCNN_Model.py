@@ -7,8 +7,8 @@ class Fully_Conection_Model(nn.Module):
                      ('ReLU_1', nn.ReLU(inplace = True)),
                      #('Dropout_1', nn.Dropout(0.1)),
   
-                     ('Linear_2', nn.Linear(4096, 4096)),
-                     ('ReLU_2', nn.ReLU(inplace = True)),
+                     #('Linear_2', nn.Linear(4096, 4096)),
+                     #('ReLU_2', nn.ReLU(inplace = True)),
                      #('Dropout_2', nn.Dropout(0.1)),
 
                      ('Linear_3', nn.Linear(4096, 4096)),
@@ -22,8 +22,8 @@ class Fully_Conection_Model(nn.Module):
                      ('ReLU_1', nn.ReLU(inplace = True)),
                      #('Dropout_1', nn.Dropout(0.1)),
     
-                     ('Linear_2', nn.Linear(4096, 4096)),
-                     ('ReLU_2', nn.ReLU(inplace = True)),
+                     #('Linear_2', nn.Linear(4096, 4096)),
+                     #('ReLU_2', nn.ReLU(inplace = True)),
                      #('Dropout_2', nn.Dropout(0.1)),
 
                      ('Linear_3', nn.Linear(4096, 4096)),
