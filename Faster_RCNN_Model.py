@@ -1,4 +1,3 @@
-# 3.Faster_RCNN_Main_Model : Fully_Conection_Model
 class Fully_Conection_Model(nn.Module):
   def __init__(self):
     super(Fully_Conection_Model, self).__init__()
