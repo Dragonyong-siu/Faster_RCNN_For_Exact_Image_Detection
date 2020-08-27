@@ -5,31 +5,6 @@ def Zero_background(Reg_Logit, Guide_Label):
   Mean_Logit = torch.mean(Zero_Mean_Logit)
   return Mean_Logit
 
-#def Make_Forms(Tuple):
-#  x_2, x_1, y_2, y_1 = Tuple
-#  T_x = (x_1 + x_2) * 0.5
-#  T_y = (y_1 + y_2) * 0.5
-#  T_w = (x_2 - x_1)
-#  T_h = (y_2 - y_1)
-#  return (T_x, T_y, T_w, T_h)
-
-#def To_Device(Tuple):
-#  t1, t2, t3, t4 = Tuple
-#  t1 = t1.to(device)
-#  t2 = t2.to(device)
-#  t3 = t3.to(device)
-#  t4 = t4.to(device)
-#  return (t1, t2, t3, t4)
-
-#def Make_Logits(P, D):
-#  (p_x, p_y, p_w, p_h) = P
-#  (d_x, d_y, d_w, d_h) = D
-#  T_u = (p_w * d_x + p_x,
-#         p_h * d_y + p_y,
-#         p_w * torch.exp(d_w),
-#         p_h * torch.exp(d_h))
-#    return T_u
-
 from tqdm import tqdm
 import random
 def Train_Epoch(dataloader, model, optimizer, device):
