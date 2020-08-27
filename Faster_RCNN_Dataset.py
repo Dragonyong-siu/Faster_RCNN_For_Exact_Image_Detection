@@ -1,3 +1,4 @@
+# 2.Faster_RCNN_Dataset
 import numpy as np
 import torch
 from torchvision import transforms
@@ -24,6 +25,7 @@ class Faster_RCNN_Dataset(torch.utils.data.Dataset):
     Original_Size = (int(Size_Tuple['depth']),
                      int(Size_Tuple['height']),
                      int(Size_Tuple['width']))
+    
     Image_Array = np.asarray(PIL_Image)
     Full_Image_Array = Image_Array.copy()
     Full_Image_Tensor = torch.Tensor(Full_Image_Array)#.reshape(3,
@@ -56,7 +58,9 @@ class Faster_RCNN_Dataset(torch.utils.data.Dataset):
     # Regions_of_Interests(RoIs)
     _, Orig_Height, Orig_Width = Original_Size
     _, Conv_Height, Conv_Width = Feature_Map.squeeze(0).shape
+    Roi_ratio = (Orig_Height, Orig_Width, Conv_Height, Conv_Width)
     rois = RPN(Feature_Map.to(device), (Orig_Width, Orig_Height))
+
     RoIs = rois[2]
     Regions_of_Interests = []
     for candidate in RoIs:
@@ -74,17 +78,15 @@ class Faster_RCNN_Dataset(torch.utils.data.Dataset):
     
     T_ids = []
     T_label = []
-    T_GT = []
-    T_Box = []
     T_target = []
     T_guide = []
+    T_roi = []
     
     F_ids = []
     F_label = []
-    F_GT = []
-    F_Box = []
     F_target = []
     F_guide = []
+    F_roi = []
     for i in range(len(Ground_Truths)):
       Xmax, Xmin, Ymax, Ymin = Ground_Truths[i]
       Resized_GT = (int((Xmax * Conv_Width) / Orig_Width),
@@ -98,6 +100,7 @@ class Faster_RCNN_Dataset(torch.utils.data.Dataset):
           T_label.append(model_label)
           T_target.append((Make_targets(RoI, Resized_GT)).tolist())
           T_guide.append(1)
+          T_roi.append((1, RoI))
           if len(T_ids) >= Key_Number * 5 / 6:
             break
           
@@ -107,6 +110,7 @@ class Faster_RCNN_Dataset(torch.utils.data.Dataset):
           F_label.append(model_label)
           F_target.append((Make_targets(RoI, Resized_GT)).tolist())
           F_guide.append(0)
+          F_roi.append((0, RoI))
 
     # Cls_label
     # Reg_label
@@ -115,6 +119,7 @@ class Faster_RCNN_Dataset(torch.utils.data.Dataset):
       Cls_label = T_label[:Key_Number]
       Reg_label = T_target[:Key_Number]
       Guide_label = T_guide[:Key_Number]
+      Roi_box = T_roi[:Key_Number]
 
     else:
       F_num = Key_Number - len(T_ids)
@@ -122,21 +127,25 @@ class Faster_RCNN_Dataset(torch.utils.data.Dataset):
       F_label = F_label[:F_num]
       F_target = F_target[:F_num] 
       F_guide = F_guide[:F_num]
+      F_roi = F_roi[:F_num]
     
       Model_ids = T_ids + F_ids
       Cls_label = T_label + F_label
       Reg_label = T_target + F_target
       Guide_label = T_guide + F_guide
+      Roi_box = T_roi + F_roi
     
     while len(Model_ids) < Key_Number:
       Model_ids.append(Model_ids[0])
       Cls_label.append(Cls_label[0])
       Reg_label.append(Reg_label[0])
       Guide_label.append(Guide_label[0])
+      Roi_box.append(Roi_box[0])
+    
     # Shuffle Input
     Model_INPUT = []
     for i in range(Key_Number):
-      INPUT_Tuple = (Model_ids[i], Cls_label[i], Reg_label[i], Guide_label[i])
+      INPUT_Tuple = (Model_ids[i], Cls_label[i], Reg_label[i], Guide_label[i], Roi_box[i])
       Model_INPUT.append(INPUT_Tuple)
 
     import random
@@ -145,23 +154,29 @@ class Faster_RCNN_Dataset(torch.utils.data.Dataset):
     Cls_label = []
     Reg_label = []
     Guide_label = []
+    Roi_box = []
     for i in range(Key_Number):
       Model_ids.append(Model_INPUT[i][0])
       Cls_label.append(Model_INPUT[i][1])
       Reg_label.append(Model_INPUT[i][2])
       Guide_label.append(Model_INPUT[i][3])
+      Roi_box.append(Model_INPUT[i][4])
 
     # Dictionary['Full_Image_Tensor '] = Full_Image_Tensor 
     # Dictionary['Original_size'] = Original_size 
     # Dictionary['Ground_Truths'] = Ground_Truths
     # Dictionary['Feature_Map'] = Feature_Map
     # Dictionary['Regions_of_Interests(RoIs)'] = Regions_of_Interests(RoIs)
+    
+    Dictionary['Full_Image_Array'] = Full_Image_Array
     Dictionary['Full_Image_Tensor'] = Full_Image_Tensor
     Dictionary['Model_ids'] = torch.cat(Model_ids)
     Dictionary['Cls_label'] = torch.Tensor(Cls_label)
     Dictionary['Reg_label'] = torch.Tensor(Reg_label)
     Dictionary['Guide_label'] = torch.Tensor(Guide_label)
-    
+    Dictionary['Roi_box'] = Roi_box
+    Dictionary['Roi_ratio'] = Roi_ratio
+        
     return Dictionary
 
 def RoI_Pooling(feature_map, rois, size):
@@ -193,8 +208,8 @@ def Compute_IoU(CD_box, GT_box):
 def Make_targets(P, G):
   p_r, p_l, p_t, p_b = torch.Tensor(P).to(device)
   g_r, g_l, g_t, g_b = torch.Tensor(G).to(device)
-  t_x = ((g_l + g_r) * 0.5 + (p_l + p_r) * 0.5) / (p_r - p_l)
-  t_y = ((g_b + g_t) * 0.5 + (p_b + p_t) * 0.5) / (p_t - p_b)
+  t_x = ((g_l + g_r) * 0.5 - (p_l + p_r) * 0.5) / (p_r - p_l)
+  t_y = ((g_b + g_t) * 0.5 - (p_b + p_t) * 0.5) / (p_t - p_b)
   t_w = torch.log(g_r - g_l) - torch.log(p_r - p_l)
   t_h = torch.log(g_t - g_b) - torch.log(p_t - p_b)
   return torch.Tensor([t_x, t_y, t_w, t_h])
