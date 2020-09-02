@@ -35,6 +35,10 @@
 
  5.Train(Classification + Bbox_Regression)
 
- Problem
-  Loss is not decreasing at some point.
-  Model ouputs are all same.
+**************************************************************************************************
+RPN nms : IoU threshold
+
+Region-based CNN nms (class-based nms) : probability threshold
+
+After getting the final objects and ignoring those predicted as background, we apply class-based NMS.
+This is done by grouping the objects by class, sorting them by probability and then applying NMS to each independent group before joining them again.
